@@ -291,19 +291,19 @@ export default function App() {
           transition={{ duration: 0.2 }}
         >
           {activeTab === 'notice' && (
-            <NoticeBoard currentUser={currentUser} isOfficer={isOfficer} canManageNotice={isOfficer || permissions.canManageNotice} />
+            <NoticeBoard currentUser={currentUser} isOfficer={isOfficer} canManageNotice={currentUser?.email === 'kfcrobotpw@gmail.com' || permissions.canManageNotice} />
           )}
 
           {activeTab === 'resource' && (
-            <ResourceShare currentUser={currentUser} isOfficer={isOfficer} canManageResource={isOfficer || permissions.canManageResource} />
+            <ResourceShare currentUser={currentUser} isOfficer={isOfficer} canManageResource={currentUser?.email === 'kfcrobotpw@gmail.com' || permissions.canManageResource} />
           )}
 
           {activeTab === 'calendar' && (
-            <CalendarSection currentUser={currentUser} isOfficer={isOfficer} canManageCalendar={isOfficer || permissions.canManageCalendar} />
+            <CalendarSection currentUser={currentUser} isOfficer={isOfficer} canManageCalendar={currentUser?.email === 'kfcrobotpw@gmail.com' || permissions.canManageCalendar} />
           )}
 
           {activeTab === 'executive' && (
-            <ExecutiveSection currentUser={currentUser} isOfficer={isOfficer} canManageExecutive={isOfficer || permissions.canManageExecutive} />
+            <ExecutiveSection currentUser={currentUser} isOfficer={isOfficer} canManageExecutive={currentUser?.email === 'kfcrobotpw@gmail.com' || permissions.canManageExecutive} />
           )}
 
           {activeTab === 'admin' && isOfficer && (

@@ -15,7 +15,7 @@ interface ExecutiveSectionProps {
   canManageExecutive?: boolean;
 }
 
-export default function ExecutiveSection({ currentUser, isOfficer, canManageExecutive = isOfficer }: ExecutiveSectionProps) {
+export default function ExecutiveSection({ currentUser, isOfficer, canManageExecutive = false }: ExecutiveSectionProps) {
   const [executives, setExecutives] = useState<Executive[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);

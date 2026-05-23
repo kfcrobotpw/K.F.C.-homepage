@@ -152,10 +152,27 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
                               최고 최고관리자
                             </span>
                           ) : u.isOfficer ? (
-                            <span className="inline-flex items-center gap-1 bg-blue-500/15 border border-blue-500/20 text-blue-400 text-xs px-2.5 py-1 rounded-lg font-semibold">
-                              <ShieldCheck className="w-3.5 h-3.5" />
-                              동아리 임원진
-                            </span>
+                            <div className="flex flex-col gap-1 items-start">
+                              <span className="inline-flex items-center gap-1 bg-blue-500/15 border border-blue-500/20 text-blue-400 text-xs px-2.5 py-1 rounded-lg font-semibold">
+                                <ShieldCheck className="w-3.5 h-3.5" />
+                                동아리 임원진
+                              </span>
+                              {/* Show badges for individual direct permissions */}
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {u.canManageNotice && (
+                                  <span className="text-[9px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-1 py-0.2 rounded font-medium">공지작성</span>
+                                )}
+                                {u.canManageResource && (
+                                  <span className="text-[9px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-1 py-0.2 rounded font-medium">자료삭제</span>
+                                )}
+                                {u.canManageCalendar && (
+                                  <span className="text-[9px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-1 py-0.2 rounded font-medium">일정작성</span>
+                                )}
+                                {u.canManageExecutive && (
+                                  <span className="text-[9px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-1 py-0.2 rounded font-medium">임원수정</span>
+                                )}
+                              </div>
+                            </div>
                           ) : (
                             <div className="flex flex-col gap-1 items-start">
                               <span className="inline-flex items-center gap-1 bg-[#0A0A0C] border border-slate-800 text-slate-500 text-xs px-2.5 py-1 rounded-lg">
@@ -234,33 +251,33 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
                               <div className="flex items-center justify-between">
                                 <h4 className="text-xs font-bold text-slate-300 flex items-center gap-1.5 uppercase tracking-wide">
                                   <Key className="w-3.5 h-3.5 text-blue-400" />
-                                  <span>{u.displayName} 단원의 개별 직접 권한 지정</span>
+                                  <span>{u.displayName} {u.isOfficer ? '임원' : '단원'}의 개별 권한 관리</span>
                                 </h4>
                                 {u.isOfficer && (
-                                  <span className="text-[10px] text-blue-400 bg-blue-500/10 px-2.5 py-0.5 rounded font-mono font-medium">
-                                    임원은 모든 권한을 상향 기본 보유합니다.
+                                  <span className="text-[10px] text-yellow-400 bg-yellow-500/10 border border-yellow-500/20 px-2.5 py-0.5 rounded font-mono font-medium animate-pulse">
+                                    ⚠️ 임원 직책 상태 (행위 권한 별도 허용 필요)
                                   </span>
                                 )}
                               </div>
                               <p className="text-[11px] text-slate-500 leading-relaxed">
-                                전체 임원으로 승격하지 않고도, 특정 분야의 글쓰기/일정관리/삭제 행위를 허용하고 싶을 때 사용합니다.
+                                {u.isOfficer
+                                  ? "임원 직책을 지정하였어도 실제 보드별 글쓰기 및 제어 권한은 아래에서 개별 승인해야 위임됩니다."
+                                  : "전체 임원으로 지정하지 않고도 특정 분야의 공유/수정/안내 권한만 유연하게 위임하고 싶을 때 사용합니다."
+                                }
                               </p>
 
                               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                                 {/* canManageNotice toggle */}
                                 <label className={`flex items-start gap-2.5 p-3 rounded-lg border transition select-none cursor-pointer ${
-                                  u.isOfficer 
-                                    ? 'bg-blue-950/10 border-blue-900/10 opacity-50 cursor-not-allowed text-slate-500'
-                                    : u.canManageNotice 
-                                      ? 'bg-blue-500/5 border-blue-500/30 text-white' 
-                                      : 'bg-[#0A0A0C] border-slate-800 text-slate-405 hover:border-slate-700'
+                                  u.canManageNotice 
+                                    ? 'bg-blue-500/5 border-blue-500/30 text-white font-medium border-blue-500/40 shadow shadow-blue-500/10' 
+                                    : 'bg-[#0A0A0C] border-slate-800 text-slate-400 hover:border-slate-705'
                                 }`}>
                                   <input 
                                     type="checkbox" 
-                                    checked={u.isOfficer || !!u.canManageNotice} 
-                                    disabled={u.isOfficer}
+                                    checked={!!u.canManageNotice} 
                                     onChange={() => handleTogglePermission(u, 'canManageNotice')}
-                                    className="mt-0.5 rounded border-slate-700 bg-slate-950 text-blue-600 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed"
+                                    className="mt-0.5 rounded border-slate-700 bg-slate-950 text-blue-600 focus:ring-blue-500 cursor-pointer"
                                   />
                                   <div>
                                     <span className="text-xs font-bold block">공지사항 관리</span>
@@ -270,18 +287,15 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
 
                                 {/* canManageResource toggle */}
                                 <label className={`flex items-start gap-2.5 p-3 rounded-lg border transition select-none cursor-pointer ${
-                                  u.isOfficer 
-                                    ? 'bg-blue-950/10 border-blue-900/10 opacity-50 cursor-not-allowed text-slate-500'
-                                    : u.canManageResource 
-                                      ? 'bg-blue-500/5 border-blue-500/30 text-white' 
-                                      : 'bg-[#0A0A0C] border-slate-800 text-slate-405 hover:border-slate-700'
+                                  u.canManageResource 
+                                    ? 'bg-blue-500/5 border-blue-500/30 text-white font-medium border-blue-500/40 shadow shadow-blue-500/10' 
+                                    : 'bg-[#0A0A0C] border-slate-800 text-slate-400 hover:border-slate-705'
                                 }`}>
                                   <input 
                                     type="checkbox" 
-                                    checked={u.isOfficer || !!u.canManageResource} 
-                                    disabled={u.isOfficer}
+                                    checked={!!u.canManageResource} 
                                     onChange={() => handleTogglePermission(u, 'canManageResource')}
-                                    className="mt-0.5 rounded border-slate-700 bg-slate-950 text-blue-600 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed"
+                                    className="mt-0.5 rounded border-slate-700 bg-slate-950 text-blue-600 focus:ring-blue-500 cursor-pointer"
                                   />
                                   <div>
                                     <span className="text-xs font-bold block">자료실 게시글 통제</span>
@@ -291,18 +305,15 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
 
                                 {/* canManageCalendar toggle */}
                                 <label className={`flex items-start gap-2.5 p-3 rounded-lg border transition select-none cursor-pointer ${
-                                  u.isOfficer 
-                                    ? 'bg-blue-950/10 border-blue-900/10 opacity-50 cursor-not-allowed text-slate-500'
-                                    : u.canManageCalendar 
-                                      ? 'bg-blue-500/5 border-blue-500/30 text-white' 
-                                      : 'bg-[#0A0A0C] border-slate-800 text-slate-405 hover:border-slate-700'
+                                  u.canManageCalendar 
+                                    ? 'bg-blue-500/5 border-blue-500/30 text-white font-medium border-blue-500/40 shadow shadow-blue-500/10' 
+                                    : 'bg-[#0A0A0C] border-slate-800 text-slate-400 hover:border-slate-705'
                                 }`}>
                                   <input 
                                     type="checkbox" 
-                                    checked={u.isOfficer || !!u.canManageCalendar} 
-                                    disabled={u.isOfficer}
+                                    checked={!!u.canManageCalendar} 
                                     onChange={() => handleTogglePermission(u, 'canManageCalendar')}
-                                    className="mt-0.5 rounded border-slate-700 bg-slate-950 text-blue-600 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed"
+                                    className="mt-0.5 rounded border-slate-700 bg-slate-950 text-blue-600 focus:ring-blue-500 cursor-pointer"
                                   />
                                   <div>
                                     <span className="text-xs font-bold block">일정 안내 관리</span>
@@ -312,18 +323,15 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
 
                                 {/* canManageExecutive toggle */}
                                 <label className={`flex items-start gap-2.5 p-3 rounded-lg border transition select-none cursor-pointer ${
-                                  u.isOfficer 
-                                    ? 'bg-blue-950/10 border-blue-900/10 opacity-50 cursor-not-allowed text-slate-500'
-                                    : u.canManageExecutive 
-                                      ? 'bg-blue-500/5 border-blue-500/30 text-white' 
-                                      : 'bg-[#0A0A0C] border-slate-800 text-slate-405 hover:border-slate-700'
+                                  u.canManageExecutive 
+                                    ? 'bg-blue-500/5 border-blue-500/30 text-white font-medium border-blue-500/40 shadow shadow-blue-500/10' 
+                                    : 'bg-[#0A0A0C] border-slate-800 text-slate-400 hover:border-slate-705'
                                 }`}>
                                   <input 
                                     type="checkbox" 
-                                    checked={u.isOfficer || !!u.canManageExecutive} 
-                                    disabled={u.isOfficer}
+                                    checked={!!u.canManageExecutive} 
                                     onChange={() => handleTogglePermission(u, 'canManageExecutive')}
-                                    className="mt-0.5 rounded border-slate-700 bg-slate-950 text-blue-600 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed"
+                                    className="mt-0.5 rounded border-slate-700 bg-slate-950 text-blue-600 focus:ring-blue-500 cursor-pointer"
                                   />
                                   <div>
                                     <span className="text-xs font-bold block">임원진 프로필 편집</span>

@@ -15,7 +15,7 @@ interface ResourceShareProps {
   canManageResource?: boolean;
 }
 
-export default function ResourceShare({ currentUser, isOfficer, canManageResource = isOfficer }: ResourceShareProps) {
+export default function ResourceShare({ currentUser, isOfficer, canManageResource = false }: ResourceShareProps) {
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');

@@ -15,7 +15,7 @@ interface CalendarSectionProps {
   canManageCalendar?: boolean;
 }
 
-export default function CalendarSection({ currentUser, isOfficer, canManageCalendar = isOfficer }: CalendarSectionProps) {
+export default function CalendarSection({ currentUser, isOfficer, canManageCalendar = false }: CalendarSectionProps) {
   const [events, setEvents] = useState<Schedule[]>([]);
   const [loading, setLoading] = useState(true);
 

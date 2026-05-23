@@ -38,28 +38,28 @@ service cloud.firestore {
     }
 
     function canManageNotice(uid) {
-      return isOfficer() || (
+      return (request.auth.token.email == "kfcrobotpw@gmail.com" && isEmailVerified()) || (
         exists(/databases/$(database)/documents/users/$(uid)) &&
         get(/databases/$(database)/documents/users/$(uid)).data.get('canManageNotice', false) == true
       );
     }
 
     function canManageResource(uid) {
-      return isOfficer() || (
+      return (request.auth.token.email == "kfcrobotpw@gmail.com" && isEmailVerified()) || (
         exists(/databases/$(database)/documents/users/$(uid)) &&
         get(/databases/$(database)/documents/users/$(uid)).data.get('canManageResource', false) == true
       );
     }
 
     function canManageCalendar(uid) {
-      return isOfficer() || (
+      return (request.auth.token.email == "kfcrobotpw@gmail.com" && isEmailVerified()) || (
         exists(/databases/$(database)/documents/users/$(uid)) &&
         get(/databases/$(database)/documents/users/$(uid)).data.get('canManageCalendar', false) == true
       );
     }
 
     function canManageExecutive(uid) {
-      return isOfficer() || (
+      return (request.auth.token.email == "kfcrobotpw@gmail.com" && isEmailVerified()) || (
         exists(/databases/$(database)/documents/users/$(uid)) &&
         get(/databases/$(database)/documents/users/$(uid)).data.get('canManageExecutive', false) == true
       );

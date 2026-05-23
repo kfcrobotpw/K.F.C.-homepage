@@ -15,7 +15,7 @@ interface NoticeBoardProps {
   canManageNotice?: boolean;
 }
 
-export default function NoticeBoard({ currentUser, isOfficer, canManageNotice = isOfficer }: NoticeBoardProps) {
+export default function NoticeBoard({ currentUser, isOfficer, canManageNotice = false }: NoticeBoardProps) {
   const [notices, setNotices] = useState<Notice[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeNoticeId, setActiveNoticeId] = useState<string | null>(null);
