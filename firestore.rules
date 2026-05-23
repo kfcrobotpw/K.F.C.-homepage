@@ -1,0 +1,190 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 1. Global Safety Net (Default Deny)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helper Functions ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isEmailVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Root bootstrapped admin & ABAC role checking
+    function isOfficer() {
+      return isSignedIn() && (
+        (request.auth.token.email == "kfcrobotpw@gmail.com" && isEmailVerified()) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isOfficer == true)
+      );
+    }
+
+    // Schema Validators
+    function isValidUser(data) {
+      return data.keys().hasAll(['id', 'email', 'displayName', 'photoURL', 'isOfficer']) &&
+             data.keys().size() == 5 &&
+             data.id is string &&
+             data.email is string &&
+             data.displayName is string &&
+             data.photoURL is string &&
+             data.isOfficer is bool;
+    }
+
+    function isValidNotice(data) {
+      return data.keys().hasAll(['id', 'title', 'content', 'authorId', 'authorName', 'authorPhoto', 'createdAt', 'hasPoll']) &&
+             data.id is string &&
+             data.title is string && data.title.size() <= 100 &&
+             data.content is string && data.content.size() <= 50000 &&
+             data.authorId == request.auth.uid &&
+             data.authorName is string &&
+             data.authorPhoto is string &&
+             data.hasPoll is bool;
+    }
+
+    function isValidLike(data) {
+      return data.keys().hasAll(['userId', 'createdAt']) &&
+             data.keys().size() == 2 &&
+             data.userId == request.auth.uid;
+    }
+
+    function isValidComment(data) {
+      return data.keys().hasAll(['id', 'noticeId', 'content', 'authorId', 'authorName', 'authorPhoto', 'createdAt']) &&
+             data.keys().size() == 7 &&
+             data.id is string &&
+             data.noticeId is string &&
+             data.content is string && data.content.size() <= 2000 &&
+             data.authorId == request.auth.uid &&
+             data.authorName is string &&
+             data.authorPhoto is string;
+    }
+
+    function isValidVote(data) {
+      return data.keys().hasAll(['userId', 'optionIndex', 'createdAt']) &&
+             data.keys().size() == 3 &&
+             data.userId == request.auth.uid &&
+             data.optionIndex is int;
+    }
+
+    function isValidResource(data) {
+      return data.keys().hasAll(['id', 'title', 'description', 'authorId', 'authorName', 'authorPhoto', 'createdAt']) &&
+             data.id is string &&
+             data.title is string && data.title.size() <= 100 &&
+             data.description is string && data.description.size() <= 5000 &&
+             data.authorId == request.auth.uid &&
+             data.authorName is string &&
+             data.authorPhoto is string;
+    }
+
+    function isValidSchedule(data) {
+      return data.keys().hasAll(['id', 'title', 'description', 'startDate', 'endDate', 'color', 'authorId', 'createdAt']) &&
+             data.keys().size() == 8 &&
+             data.id is string &&
+             data.title is string && data.title.size() <= 100 &&
+             data.description is string && data.description.size() <= 2000 &&
+             data.startDate is string &&
+             data.endDate is string &&
+             data.color is string &&
+             data.authorId == request.auth.uid;
+    }
+
+    function isValidExecutive(data) {
+      return data.keys().hasAll(['id', 'name', 'role', 'description', 'photoUrl', 'createdAt']) &&
+             data.id is string &&
+             data.name is string && data.name.size() <= 40 &&
+             data.role is string && data.role.size() <= 40 &&
+             data.description is string && data.description.size() <= 1000 &&
+             data.photoUrl is string;
+    }
+
+    // --- Collection Routes ---
+
+    // 1. Users Collection
+    match /users/{userId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && request.auth.uid == userId && isValidUser(incoming()) && (
+        incoming().isOfficer == false || 
+        (request.auth.token.email == "kfcrobotpw@gmail.com" && isEmailVerified())
+      );
+      allow update: if isSignedIn() && (
+        // Officers can modify anyone's properties
+        isOfficer() ||
+        // Profile owner can modify own details EXCEPT isOfficer
+        (request.auth.uid == userId && isValidUser(incoming()) && incoming().isOfficer == existing().isOfficer)
+      );
+      allow delete: if isOfficer();
+    }
+
+    // 2. Notices Collection
+    match /notices/{noticeId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isOfficer() && isValidId(noticeId) && isValidNotice(incoming());
+      allow update: if isOfficer() && isValidNotice(incoming());
+      allow delete: if isOfficer();
+
+      // Subcollection: Likes
+      match /likes/{userId} {
+        allow read: if isSignedIn();
+        allow create, delete: if isSignedIn() && request.auth.uid == userId && (request.method == 'delete' || isValidLike(incoming()));
+      }
+
+      // Subcollection: Comments
+      match /comments/{commentId} {
+        allow read: if isSignedIn();
+        allow create: if isSignedIn() && isValidId(commentId) && isValidComment(incoming());
+        allow update: if isSignedIn() && existing().authorId == request.auth.uid && isValidComment(incoming());
+        allow delete: if isSignedIn() && (existing().authorId == request.auth.uid || isOfficer());
+      }
+
+      // Subcollection: Votes
+      match /votes/{userId} {
+        allow read: if isSignedIn();
+        allow create, update: if isSignedIn() && request.auth.uid == userId && isValidVote(incoming());
+        allow delete: if isSignedIn() && request.auth.uid == userId;
+      }
+    }
+
+    // 3. Resources Collection
+    match /resources/{resourceId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(resourceId) && isValidResource(incoming());
+      allow update: if isSignedIn() && (existing().authorId == request.auth.uid || isOfficer()) && isValidResource(incoming());
+      allow delete: if isSignedIn() && (existing().authorId == request.auth.uid || isOfficer());
+    }
+
+    // 4. Schedules Collection
+    match /schedules/{scheduleId} {
+      allow read: if isSignedIn();
+      allow create: if isOfficer() && isValidId(scheduleId) && isValidSchedule(incoming());
+      allow update: if isOfficer() && isValidSchedule(incoming());
+      allow delete: if isOfficer();
+    }
+
+    // 5. Executives Collection
+    match /executives/{executiveId} {
+      allow read: if isSignedIn();
+      allow create: if isOfficer() && isValidId(executiveId) && isValidExecutive(incoming());
+      allow update: if isOfficer() && isValidExecutive(incoming());
+      allow delete: if isOfficer();
+    }
+  }
+}

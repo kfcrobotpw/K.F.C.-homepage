@@ -1,0 +1,6 @@
+{
+  "name": "KFC Robot Club",
+  "description": "용인시청소년수련관 소속 로봇동아리 K.F.C.의 공식 홈페이지입니다. 공지사항, 자료 공유, 일정 안내 및 임원 관리 기능을 포함합니다.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

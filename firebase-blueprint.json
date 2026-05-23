@@ -1,0 +1,155 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Represents a registered member of the KFC robot club",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "The Google User auth UID" },
+        "email": { "type": "string", "description": "Verified Google email" },
+        "displayName": { "type": "string", "description": "The display name of the user" },
+        "photoURL": { "type": "string", "description": "The profile picture URL of the user" },
+        "isOfficer": { "type": "boolean", "description": "True if user is an executive officer / admin" }
+      },
+      "required": ["id", "email", "displayName", "photoURL", "isOfficer"]
+    },
+    "Notice": {
+      "title": "Notice",
+      "description": "A notice board announcement post created by an officer",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "authorId": { "type": "string" },
+        "authorName": { "type": "string" },
+        "authorPhoto": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "hasPoll": { "type": "boolean" },
+        "pollQuestion": { "type": "string" },
+        "pollOptions": { "type": "array" }
+      },
+      "required": ["id", "title", "content", "authorId", "authorName", "authorPhoto", "createdAt", "hasPoll"]
+    },
+    "Like": {
+      "title": "Like",
+      "description": "A member's like on a notice board post",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "createdAt"]
+    },
+    "Comment": {
+      "title": "Comment",
+      "description": "A member's comment on an announcement notice",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "noticeId": { "type": "string" },
+        "content": { "type": "string" },
+        "authorId": { "type": "string" },
+        "authorName": { "type": "string" },
+        "authorPhoto": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "noticeId", "content", "authorId", "authorName", "authorPhoto", "createdAt"]
+    },
+    "Vote": {
+      "title": "Vote",
+      "description": "A member's vote in an announcement's active poll",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "optionIndex": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "optionIndex", "createdAt"]
+    },
+    "Resource": {
+      "title": "Resource",
+      "description": "A shared learning resource, file, or website link posted by anyone",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "fileUrl": { "type": "string" },
+        "fileName": { "type": "string" },
+        "fileType": { "type": "string" },
+        "link": { "type": "string" },
+        "authorId": { "type": "string" },
+        "authorName": { "type": "string" },
+        "authorPhoto": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "title", "description", "authorId", "authorName", "authorPhoto", "createdAt"]
+    },
+    "Schedule": {
+      "title": "Schedule",
+      "description": "A club calendar event created by an officer",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "startDate": { "type": "string" },
+        "endDate": { "type": "string" },
+        "color": { "type": "string" },
+        "authorId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "title", "description", "startDate", "endDate", "color", "authorId", "createdAt"]
+    },
+    "Executive": {
+      "title": "Executive",
+      "description": "A profile of an executive officer of the club, managed by admins",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string" },
+        "description": { "type": "string" },
+        "photoUrl": { "type": "string" },
+        "userId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "role", "description", "photoUrl", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Collection of signed-up club members"
+    },
+    "/notices/{noticeId}": {
+      "schema": "Notice",
+      "description": "Collection of club notice posts"
+    },
+    "/notices/{noticeId}/likes/{userId}": {
+      "schema": "Like",
+      "description": "Notice likes subcollection"
+    },
+    "/notices/{noticeId}/comments/{commentId}": {
+      "schema": "Comment",
+      "description": "Notice comments subcollection"
+    },
+    "/notices/{noticeId}/votes/{userId}": {
+      "schema": "Vote",
+      "description": "Users voting choices on Notice polls"
+    },
+    "/resources/{resourceId}": {
+      "schema": "Resource",
+      "description": "Collection of shared links and materials uploaded by members"
+    },
+    "/schedules/{scheduleId}": {
+      "schema": "Schedule",
+      "description": "Collection of calendar events"
+    },
+    "/executives/{executiveId}": {
+      "schema": "Executive",
+      "description": "Executive board profile entries"
+    }
+  }
+}
