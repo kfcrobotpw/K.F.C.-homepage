@@ -4,6 +4,10 @@ export interface UserProfile {
   displayName: string;
   photoURL: string;
   isOfficer: boolean;
+  canManageNotice?: boolean;
+  canManageResource?: boolean;
+  canManageCalendar?: boolean;
+  canManageExecutive?: boolean;
 }
 
 export interface Notice {

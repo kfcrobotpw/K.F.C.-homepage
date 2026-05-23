@@ -12,9 +12,10 @@ import {
 interface ResourceShareProps {
   currentUser: { uid: string; email: string; displayName: string; photoURL: string };
   isOfficer: boolean;
+  canManageResource?: boolean;
 }
 
-export default function ResourceShare({ currentUser, isOfficer }: ResourceShareProps) {
+export default function ResourceShare({ currentUser, isOfficer, canManageResource = isOfficer }: ResourceShareProps) {
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -113,7 +114,7 @@ export default function ResourceShare({ currentUser, isOfficer }: ResourceShareP
   };
 
   const handleDeleteResource = async (id: string, authorId: string) => {
-    if (currentUser.uid !== authorId && !isOfficer) {
+    if (currentUser.uid !== authorId && !canManageResource) {
       alert('작성자 및 관리자만 삭제할 수 있습니다.');
       return;
     }
@@ -219,7 +220,7 @@ export default function ResourceShare({ currentUser, isOfficer }: ResourceShareP
                     {getIconForType(res.fileType)}
                   </div>
 
-                  {(res.authorId === currentUser.uid || isOfficer) && (
+                  {(res.authorId === currentUser.uid || canManageResource) && (
                     <button
                       id={`delete-resource-${res.id}`}
                       onClick={() => handleDeleteResource(res.id, res.authorId)}

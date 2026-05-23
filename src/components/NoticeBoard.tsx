@@ -12,9 +12,10 @@ import {
 interface NoticeBoardProps {
   currentUser: { uid: string; email: string; displayName: string; photoURL: string };
   isOfficer: boolean;
+  canManageNotice?: boolean;
 }
 
-export default function NoticeBoard({ currentUser, isOfficer }: NoticeBoardProps) {
+export default function NoticeBoard({ currentUser, isOfficer, canManageNotice = isOfficer }: NoticeBoardProps) {
   const [notices, setNotices] = useState<Notice[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeNoticeId, setActiveNoticeId] = useState<string | null>(null);
@@ -312,7 +313,7 @@ export default function NoticeBoard({ currentUser, isOfficer }: NoticeBoardProps
           <p className="text-slate-400 text-sm mt-1">K.F.C. 동아리의 공식 소식과 긴급 안내를 전해드립니다.</p>
         </div>
 
-        {isOfficer && (
+        {canManageNotice && (
           <button
             id="create-notice-btn"
             onClick={() => setShowCreateModal(true)}
@@ -357,7 +358,7 @@ export default function NoticeBoard({ currentUser, isOfficer }: NoticeBoardProps
                     <span className="text-xs text-slate-500 font-mono">{formatTimestamp(notice.createdAt)}</span>
                   </div>
 
-                  {isOfficer && (
+                  {canManageNotice && (
                     <button
                       id={`delete-notice-btn-${notice.id}`}
                       onClick={(e) => handleDeleteNotice(notice.id, e)}
@@ -527,7 +528,7 @@ export default function NoticeBoard({ currentUser, isOfficer }: NoticeBoardProps
                                 <span className="text-slate-600 font-mono text-[10px]">{formatTimestamp(comment.createdAt)}</span>
                               </div>
 
-                              {(comment.authorId === currentUser.uid || isOfficer) && (
+                              {(comment.authorId === currentUser.uid || canManageNotice) && (
                                 <button
                                   id={`delete-comment-btn-${comment.id}`}
                                   onClick={() => handleDeleteComment(comment.id)}

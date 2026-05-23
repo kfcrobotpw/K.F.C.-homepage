@@ -25,6 +25,12 @@ interface AuthUser {
 export default function App() {
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [isOfficer, setIsOfficer] = useState(false);
+  const [permissions, setPermissions] = useState({
+    canManageNotice: false,
+    canManageResource: false,
+    canManageCalendar: false,
+    canManageExecutive: false,
+  });
   const [authLoading, setAuthLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'notice' | 'resource' | 'calendar' | 'executive' | 'admin'>('notice');
 
@@ -79,11 +85,22 @@ export default function App() {
       if (docSnap.exists()) {
         const d = docSnap.data();
         setIsOfficer(!!d.isOfficer);
+        setPermissions({
+          canManageNotice: !!d.canManageNotice,
+          canManageResource: !!d.canManageResource,
+          canManageCalendar: !!d.canManageCalendar,
+          canManageExecutive: !!d.canManageExecutive,
+        });
       } else {
         // Default check if they logged-in via admin bypass
-        if (currentUser.email === 'kfcrobotpw@gmail.com') {
-          setIsOfficer(true);
-        }
+        const isDefaultOfficer = currentUser.email === 'kfcrobotpw@gmail.com';
+        setIsOfficer(isDefaultOfficer);
+        setPermissions({
+          canManageNotice: isDefaultOfficer,
+          canManageResource: isDefaultOfficer,
+          canManageCalendar: isDefaultOfficer,
+          canManageExecutive: isDefaultOfficer,
+        });
       }
     }, (error) => {
       console.warn('Current user sync warning - permissions might be loading: ', error);
@@ -274,19 +291,19 @@ export default function App() {
           transition={{ duration: 0.2 }}
         >
           {activeTab === 'notice' && (
-            <NoticeBoard currentUser={currentUser} isOfficer={isOfficer} />
+            <NoticeBoard currentUser={currentUser} isOfficer={isOfficer} canManageNotice={isOfficer || permissions.canManageNotice} />
           )}
 
           {activeTab === 'resource' && (
-            <ResourceShare currentUser={currentUser} isOfficer={isOfficer} />
+            <ResourceShare currentUser={currentUser} isOfficer={isOfficer} canManageResource={isOfficer || permissions.canManageResource} />
           )}
 
           {activeTab === 'calendar' && (
-            <CalendarSection currentUser={currentUser} isOfficer={isOfficer} />
+            <CalendarSection currentUser={currentUser} isOfficer={isOfficer} canManageCalendar={isOfficer || permissions.canManageCalendar} />
           )}
 
           {activeTab === 'executive' && (
-            <ExecutiveSection currentUser={currentUser} isOfficer={isOfficer} />
+            <ExecutiveSection currentUser={currentUser} isOfficer={isOfficer} canManageExecutive={isOfficer || permissions.canManageExecutive} />
           )}
 
           {activeTab === 'admin' && isOfficer && (

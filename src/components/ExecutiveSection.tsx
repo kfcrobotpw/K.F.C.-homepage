@@ -12,9 +12,10 @@ import {
 interface ExecutiveSectionProps {
   currentUser: { uid: string; email: string; displayName: string; photoURL: string };
   isOfficer: boolean;
+  canManageExecutive?: boolean;
 }
 
-export default function ExecutiveSection({ currentUser, isOfficer }: ExecutiveSectionProps) {
+export default function ExecutiveSection({ currentUser, isOfficer, canManageExecutive = isOfficer }: ExecutiveSectionProps) {
   const [executives, setExecutives] = useState<Executive[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -194,7 +195,7 @@ export default function ExecutiveSection({ currentUser, isOfficer }: ExecutiveSe
           <p className="text-slate-400 text-sm mt-1">K.F.C. 로봇동아리를 이끌어가는 든든한 운영진들입니다. 카드를 눌러 활동 기록을 조회해 보세요.</p>
         </div>
 
-        {isOfficer && (
+        {canManageExecutive && (
           <button
             id="register-exec-btn"
             onClick={handleOpenAddModal}
@@ -210,7 +211,7 @@ export default function ExecutiveSection({ currentUser, isOfficer }: ExecutiveSe
         <div className="text-center py-12 text-slate-400 text-sm font-mono">로딩 중...</div>
       ) : executives.length === 0 ? (
         <div className="bg-[#121216] border border-slate-800 rounded-xl p-12 text-center text-slate-400 text-sm">
-          현재 등록된 임원이 없습니다. {isOfficer && "새 프로필을 등록해 임원진을 소개해 보세요!"}
+          현재 등록된 임원이 없습니다. {canManageExecutive && "새 프로필을 등록해 임원진을 소개해 보세요!"}
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -232,13 +233,11 @@ export default function ExecutiveSection({ currentUser, isOfficer }: ExecutiveSe
                   <div>
                     {/* Upper row */}
                     <div className="flex justify-between items-start mb-4">
-                      <img
-                        src={exec.photoUrl}
-                        alt={exec.name}
-                        className="w-16 h-16 rounded-2xl object-cover border border-slate-800 shadow"
-                      />
+                      <span className="text-xs font-semibold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded font-mono">
+                        {exec.role}
+                      </span>
 
-                      {isOfficer && (
+                      {canManageExecutive && (
                         <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
                           <button
                             id={`edit-exec-${exec.id}`}
@@ -260,9 +259,6 @@ export default function ExecutiveSection({ currentUser, isOfficer }: ExecutiveSe
                       )}
                     </div>
 
-                    <span className="text-xs font-semibold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded font-mono">
-                      {exec.role}
-                    </span>
                     <h3 className="text-lg font-bold text-white mt-2 mb-1">{exec.name}</h3>
                     <p className="text-xs text-slate-400 leading-relaxed break-keep">{exec.description}</p>
                   </div>
@@ -303,11 +299,10 @@ export default function ExecutiveSection({ currentUser, isOfficer }: ExecutiveSe
                   </button>
                 </div>
 
-                <div className="flex items-center gap-3.5 mb-5 p-3.5 bg-[#0A0A0C]/50 border border-slate-800 rounded-xl">
-                  <img src={selectedExecutive.photoUrl} alt={selectedExecutive.name} className="w-12 h-12 rounded-xl object-cover border border-slate-800" />
+                <div className="p-3.5 bg-[#0A0A0C]/50 border border-slate-800 rounded-xl">
                   <div>
                     <h3 className="font-bold text-white text-base leading-none">{selectedExecutive.name}</h3>
-                    <span className="text-xs text-blue-400 mt-1 block">{selectedExecutive.role}</span>
+                    <span className="text-xs text-blue-400 mt-1.5 block">{selectedExecutive.role}</span>
                   </div>
                 </div>
 

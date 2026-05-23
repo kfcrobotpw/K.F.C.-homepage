@@ -37,15 +37,47 @@ service cloud.firestore {
       );
     }
 
+    function canManageNotice(uid) {
+      return isOfficer() || (
+        exists(/databases/$(database)/documents/users/$(uid)) &&
+        get(/databases/$(database)/documents/users/$(uid)).data.get('canManageNotice', false) == true
+      );
+    }
+
+    function canManageResource(uid) {
+      return isOfficer() || (
+        exists(/databases/$(database)/documents/users/$(uid)) &&
+        get(/databases/$(database)/documents/users/$(uid)).data.get('canManageResource', false) == true
+      );
+    }
+
+    function canManageCalendar(uid) {
+      return isOfficer() || (
+        exists(/databases/$(database)/documents/users/$(uid)) &&
+        get(/databases/$(database)/documents/users/$(uid)).data.get('canManageCalendar', false) == true
+      );
+    }
+
+    function canManageExecutive(uid) {
+      return isOfficer() || (
+        exists(/databases/$(database)/documents/users/$(uid)) &&
+        get(/databases/$(database)/documents/users/$(uid)).data.get('canManageExecutive', false) == true
+      );
+    }
+
     // Schema Validators
     function isValidUser(data) {
       return data.keys().hasAll(['id', 'email', 'displayName', 'photoURL', 'isOfficer']) &&
-             data.keys().size() == 5 &&
+             data.keys().size() >= 5 && data.keys().size() <= 9 &&
              data.id is string &&
              data.email is string &&
              data.displayName is string &&
              data.photoURL is string &&
-             data.isOfficer is bool;
+             data.isOfficer is bool &&
+             (!data.keys().contains('canManageNotice') || data.canManageNotice is bool) &&
+             (!data.keys().contains('canManageResource') || data.canManageResource is bool) &&
+             (!data.keys().contains('canManageCalendar') || data.canManageCalendar is bool) &&
+             (!data.keys().contains('canManageExecutive') || data.canManageExecutive is bool);
     }
 
     function isValidNotice(data) {
@@ -127,8 +159,13 @@ service cloud.firestore {
       allow update: if isSignedIn() && (
         // Officers can modify anyone's properties
         isOfficer() ||
-        // Profile owner can modify own details EXCEPT isOfficer
-        (request.auth.uid == userId && isValidUser(incoming()) && incoming().isOfficer == existing().isOfficer)
+        // Profile owner can modify own details EXCEPT isOfficer and permission fields
+        (request.auth.uid == userId && isValidUser(incoming()) && 
+         incoming().isOfficer == existing().isOfficer &&
+         incoming().get('canManageNotice', false) == existing().get('canManageNotice', false) &&
+         incoming().get('canManageResource', false) == existing().get('canManageResource', false) &&
+         incoming().get('canManageCalendar', false) == existing().get('canManageCalendar', false) &&
+         incoming().get('canManageExecutive', false) == existing().get('canManageExecutive', false))
       );
       allow delete: if isOfficer();
     }
@@ -137,9 +174,9 @@ service cloud.firestore {
     match /notices/{noticeId} {
       allow get: if isSignedIn();
       allow list: if isSignedIn();
-      allow create: if isOfficer() && isValidId(noticeId) && isValidNotice(incoming());
-      allow update: if isOfficer() && isValidNotice(incoming());
-      allow delete: if isOfficer();
+      allow create: if canManageNotice(request.auth.uid) && isValidId(noticeId) && isValidNotice(incoming());
+      allow update: if canManageNotice(request.auth.uid) && isValidNotice(incoming());
+      allow delete: if canManageNotice(request.auth.uid);
 
       // Subcollection: Likes
       match /likes/{userId} {
@@ -152,7 +189,7 @@ service cloud.firestore {
         allow read: if isSignedIn();
         allow create: if isSignedIn() && isValidId(commentId) && isValidComment(incoming());
         allow update: if isSignedIn() && existing().authorId == request.auth.uid && isValidComment(incoming());
-        allow delete: if isSignedIn() && (existing().authorId == request.auth.uid || isOfficer());
+        allow delete: if isSignedIn() && (existing().authorId == request.auth.uid || canManageNotice(request.auth.uid));
       }
 
       // Subcollection: Votes
@@ -167,24 +204,24 @@ service cloud.firestore {
     match /resources/{resourceId} {
       allow read: if isSignedIn();
       allow create: if isSignedIn() && isValidId(resourceId) && isValidResource(incoming());
-      allow update: if isSignedIn() && (existing().authorId == request.auth.uid || isOfficer()) && isValidResource(incoming());
-      allow delete: if isSignedIn() && (existing().authorId == request.auth.uid || isOfficer());
+      allow update: if isSignedIn() && (existing().authorId == request.auth.uid || canManageResource(request.auth.uid)) && isValidResource(incoming());
+      allow delete: if isSignedIn() && (existing().authorId == request.auth.uid || canManageResource(request.auth.uid));
     }
 
     // 4. Schedules Collection
     match /schedules/{scheduleId} {
       allow read: if isSignedIn();
-      allow create: if isOfficer() && isValidId(scheduleId) && isValidSchedule(incoming());
-      allow update: if isOfficer() && isValidSchedule(incoming());
-      allow delete: if isOfficer();
+      allow create: if canManageCalendar(request.auth.uid) && isValidId(scheduleId) && isValidSchedule(incoming());
+      allow update: if canManageCalendar(request.auth.uid) && isValidSchedule(incoming());
+      allow delete: if canManageCalendar(request.auth.uid);
     }
 
     // 5. Executives Collection
     match /executives/{executiveId} {
       allow read: if isSignedIn();
-      allow create: if isOfficer() && isValidId(executiveId) && isValidExecutive(incoming());
-      allow update: if isOfficer() && isValidExecutive(incoming());
-      allow delete: if isOfficer();
+      allow create: if canManageExecutive(request.auth.uid) && isValidId(executiveId) && isValidExecutive(incoming());
+      allow update: if canManageExecutive(request.auth.uid) && isValidExecutive(incoming());
+      allow delete: if canManageExecutive(request.auth.uid);
     }
   }
 }

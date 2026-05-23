@@ -12,9 +12,10 @@ import {
 interface CalendarSectionProps {
   currentUser: { uid: string; email: string; displayName: string; photoURL: string };
   isOfficer: boolean;
+  canManageCalendar?: boolean;
 }
 
-export default function CalendarSection({ currentUser, isOfficer }: CalendarSectionProps) {
+export default function CalendarSection({ currentUser, isOfficer, canManageCalendar = isOfficer }: CalendarSectionProps) {
   const [events, setEvents] = useState<Schedule[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -93,7 +94,7 @@ export default function CalendarSection({ currentUser, isOfficer }: CalendarSect
   };
 
   const handleDeleteEvent = async (id: string) => {
-    if (!isOfficer) return;
+    if (!canManageCalendar) return;
     if (!confirm('정말로 이 일정을 삭제하시겠습니까?')) return;
 
     try {
@@ -153,7 +154,7 @@ export default function CalendarSection({ currentUser, isOfficer }: CalendarSect
           <p className="text-slate-400 text-sm mt-1">로봇 대동제, 아이디어 해커톤 및 교육 일정을 상세히 공유합니다.</p>
         </div>
 
-        {isOfficer && (
+        {canManageCalendar && (
           <button
             id="open-add-event-btn"
             onClick={() => setShowAddModal(true)}
@@ -303,7 +304,7 @@ export default function CalendarSection({ currentUser, isOfficer }: CalendarSect
                           <span className={`px-2 py-0.5 text-[10px] text-slate-950 ${ev.color} rounded font-semibold`}>
                             {ev.title}
                           </span>
-                          {isOfficer && (
+                          {canManageCalendar && (
                             <button
                               id={`delete-event-btn-${ev.id}`}
                               onClick={() => handleDeleteEvent(ev.id)}
