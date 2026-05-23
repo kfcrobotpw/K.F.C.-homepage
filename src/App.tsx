@@ -10,9 +10,11 @@ import ResourceShare from './components/ResourceShare';
 import CalendarSection from './components/CalendarSection';
 import ExecutiveSection from './components/ExecutiveSection';
 import AdminPanel from './components/AdminPanel';
+import PartRental from './components/PartRental';
+import OfficerChat from './components/OfficerChat';
 
 import { 
-  Bell, BookOpen, Calendar, Info, ShieldAlert, Cpu, LogOut, ChevronRight, User, GraduationCap
+  Bell, BookOpen, Calendar, Info, ShieldAlert, Cpu, LogOut, ChevronRight, User, GraduationCap, Wrench, MessageSquare
 } from 'lucide-react';
 
 interface AuthUser {
@@ -32,7 +34,7 @@ export default function App() {
     canManageExecutive: false,
   });
   const [authLoading, setAuthLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'notice' | 'resource' | 'calendar' | 'executive' | 'admin'>('notice');
+  const [activeTab, setActiveTab] = useState<'notice' | 'resource' | 'rental' | 'calendar' | 'executive' | 'admin' | 'chat'>('notice');
 
   // Listen to Auth State
   useEffect(() => {
@@ -227,7 +229,10 @@ export default function App() {
 
             <button
               id="tab-resource"
-              onClick={() => setActiveTab('resource')}
+              onClick={() => {
+                setActiveTab('resource');
+                window.open('https://zigzag-mandrill-e69.notion.site/369222875606804385a8ebd2673b8a20?source=copy_link', '_blank');
+              }}
               className={`px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg flex items-center gap-1.5 shrink-0 transition cursor-pointer ${
                 activeTab === 'resource'
                   ? 'bg-blue-600 text-white font-bold shadow-lg shadow-blue-900/20'
@@ -236,6 +241,22 @@ export default function App() {
             >
               <BookOpen className="w-4 h-4 shrink-0" />
               <span>자료 공유</span>
+            </button>
+
+            <button
+              id="tab-rental"
+              onClick={() => {
+                setActiveTab('rental');
+                window.open('https://rentlegobykfcrobotpw.netlify.app/', '_blank');
+              }}
+              className={`px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg flex items-center gap-1.5 shrink-0 transition cursor-pointer ${
+                activeTab === 'rental'
+                  ? 'bg-blue-600 text-white font-bold shadow-lg shadow-blue-900/20'
+                  : 'text-slate-400 hover:text-white hover:bg-[#121216]/80'
+              }`}
+            >
+              <Wrench className="w-4 h-4 shrink-0" />
+              <span>부품 대여</span>
             </button>
 
             <button
@@ -278,6 +299,21 @@ export default function App() {
                 <span>권한 관리</span>
               </button>
             )}
+
+            {isOfficer && (
+              <button
+                id="tab-chat"
+                onClick={() => setActiveTab('chat')}
+                className={`px-3 py-2 text-xs sm:text-sm font-semibold rounded-lg flex items-center gap-1.5 shrink-0 border border-dashed transition cursor-pointer ${
+                  activeTab === 'chat'
+                    ? 'bg-blue-600/10 border-blue-500 text-blue-450 font-bold'
+                    : 'text-slate-500 border-slate-800 hover:text-blue-400 hover:border-blue-500/30'
+                }`}
+              >
+                <MessageSquare className="w-4 h-4 shrink-0" />
+                <span>임원 톡방</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -298,6 +334,10 @@ export default function App() {
             <ResourceShare currentUser={currentUser} isOfficer={isOfficer} canManageResource={currentUser?.email === 'kfcrobotpw@gmail.com' || permissions.canManageResource} />
           )}
 
+          {activeTab === 'rental' && (
+            <PartRental currentUser={currentUser} isOfficer={isOfficer} />
+          )}
+
           {activeTab === 'calendar' && (
             <CalendarSection currentUser={currentUser} isOfficer={isOfficer} canManageCalendar={currentUser?.email === 'kfcrobotpw@gmail.com' || permissions.canManageCalendar} />
           )}
@@ -308,6 +348,10 @@ export default function App() {
 
           {activeTab === 'admin' && isOfficer && (
             <AdminPanel currentUser={currentUser} />
+          )}
+
+          {activeTab === 'chat' && (
+            <OfficerChat currentUser={currentUser} isOfficer={isOfficer} />
           )}
         </motion.div>
       </main>

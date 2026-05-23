@@ -88,7 +88,9 @@ service cloud.firestore {
              data.authorId == request.auth.uid &&
              data.authorName is string &&
              data.authorPhoto is string &&
-             data.hasPoll is bool;
+             data.hasPoll is bool &&
+             (!data.keys().contains('files') || data.files is list) &&
+             (!data.keys().contains('links') || data.links is list);
     }
 
     function isValidLike(data) {
@@ -144,6 +146,17 @@ service cloud.firestore {
              data.role is string && data.role.size() <= 40 &&
              data.description is string && data.description.size() <= 1000 &&
              data.photoUrl is string;
+    }
+
+    function isValidChatMessage(data) {
+      return data.keys().hasAll(['id', 'content', 'senderId', 'senderName', 'senderPhoto', 'createdAt']) &&
+             data.keys().size() == 6 &&
+             data.id is string &&
+             data.content is string && data.content.size() <= 2500 &&
+             data.senderId == request.auth.uid &&
+             data.senderName is string && data.senderName.size() <= 100 &&
+             data.senderPhoto is string &&
+             data.createdAt == request.time;
     }
 
     // --- Collection Routes ---
@@ -222,6 +235,14 @@ service cloud.firestore {
       allow create: if canManageExecutive(request.auth.uid) && isValidId(executiveId) && isValidExecutive(incoming());
       allow update: if canManageExecutive(request.auth.uid) && isValidExecutive(incoming());
       allow delete: if canManageExecutive(request.auth.uid);
+    }
+
+    // 6. Officer Messages Collection (Executive Chat)
+    match /officer_messages/{messageId} {
+      allow get, list: if isOfficer();
+      allow create: if isOfficer() && isValidId(messageId) && isValidChatMessage(incoming());
+      allow update: if false; // Messages are immutable
+      allow delete: if isOfficer() && (existing().senderId == request.auth.uid || request.auth.token.email == "kfcrobotpw@gmail.com");
     }
   }
 }

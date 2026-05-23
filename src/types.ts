@@ -21,6 +21,8 @@ export interface Notice {
   hasPoll: boolean;
   pollQuestion?: string;
   pollOptions?: string[];
+  files?: { name: string; size: string; type: string; url: string }[];
+  links?: { title: string; url: string }[];
 }
 
 export interface Comment {
