@@ -235,7 +235,7 @@ export default function OfficerChat({ currentUser, isOfficer }: OfficerChatProps
       </div>
 
       {/* 2. CHAT FEED BLOCK */}
-      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-[#0A0A0C]/90 relative" style={{ minHeight: 0 }}>
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-[#0A0A0C]/90 relative [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-800 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-700 transition" style={{ minHeight: 0 }}>
         {errorText && (
           <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-xl flex items-center gap-2">
             <span>⚠️ {errorText}</span>
@@ -249,10 +249,10 @@ export default function OfficerChat({ currentUser, isOfficer }: OfficerChatProps
         ) : filteredMessages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center space-y-2">
             <div className="w-12 h-12 rounded-xl bg-slate-800/45 flex items-center justify-center text-slate-500">
-              <MessageSquare className="w-6 h-6 animate-pulse" />
+              <MessageSquare className="w-6 h-6 opacity-45" />
             </div>
             <p className="text-slate-450 text-xs">
-              {searchQuery ? '검색된 대화 메시지가 없습니다.' : '임원 톡방의 첫 메시지를 전송해 보세요! (보안 통신 탑재)'}
+              {searchQuery ? '검색된 대화 메시지가 없습니다.' : ''}
             </p>
           </div>
         ) : (
@@ -376,7 +376,7 @@ export default function OfficerChat({ currentUser, isOfficer }: OfficerChatProps
         {/* Quick notification bottom prompt */}
         <div className="flex items-center gap-1.5 text-[10px] text-slate-550 font-mono mt-2.5">
           <UserCheck className="w-3.5 h-3.5 text-blue-500" />
-          <span>보안 경고: 본 화면은 승인된 임원 전용 채널로, 나누신 대화는 실시간으로 암호화되어 동기화됩니다.</span>
+          <span>보안 경고: 본 화면은 승인된 임원 전용 채널입니다.</span>
         </div>
       </div>
     </div>

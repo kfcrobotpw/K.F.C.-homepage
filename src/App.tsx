@@ -111,6 +111,65 @@ export default function App() {
     return () => unsubscribe();
   }, [currentUser]);
 
+  // Channel.io Live Messaging Integration
+  useEffect(() => {
+    // 1. Load Script
+    if (!(window as any).ChannelIO) {
+      (function() {
+        var w = window as any;
+        var ch = function() {
+          ch.c(arguments);
+        } as any;
+        ch.q = [];
+        ch.c = function(args: any) {
+          ch.q.push(args);
+        };
+        w.ChannelIO = ch;
+        function l() {
+          if (w.ChannelIOInitialized) return;
+          w.ChannelIOInitialized = true;
+          var s = document.createElement("script");
+          s.type = "text/javascript";
+          s.async = true;
+          s.src = "https://cdn.channel.io/plugin/ch-plugin-web.js";
+          var x = document.getElementsByTagName("script")[0];
+          if (x && x.parentNode) {
+            x.parentNode.insertBefore(s, x);
+          }
+        }
+        if (document.readyState === "complete") {
+          l();
+        } else {
+          window.addEventListener("DOMContentLoaded", l);
+          window.addEventListener("load", l);
+        }
+      })();
+    }
+
+    // 2. Boot Service
+    if (currentUser) {
+      (window as any).ChannelIO('boot', {
+        pluginKey: "f24c2b79-2db7-4fbf-8b37-9a16ddcf81c9",
+        memberId: currentUser.uid,
+        profile: {
+          name: currentUser.displayName,
+          email: currentUser.email,
+          avatarUrl: currentUser.photoURL,
+        }
+      });
+    } else {
+      (window as any).ChannelIO('boot', {
+        pluginKey: "f24c2b79-2db7-4fbf-8b37-9a16ddcf81c9"
+      });
+    }
+
+    return () => {
+      if ((window as any).ChannelIO) {
+        (window as any).ChannelIO('shutdown');
+      }
+    };
+  }, [currentUser]);
+
   const handleLoggedUser = async (user: AuthUser) => {
     setCurrentUser(user);
     
