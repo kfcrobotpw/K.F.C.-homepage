@@ -52,7 +52,18 @@ export default function ExecutiveSection({ currentUser, isOfficer, canManageExec
       snapshot.forEach((doc) => {
         list.push({ id: doc.id, ...doc.data() } as Executive);
       });
-      setExecutives(list);
+      
+      // Sort by registration order (createdAt asc)
+      const sortedList = list.sort((a, b) => {
+        const timeA = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+        const timeB = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
+        if (timeA !== timeB) {
+          return timeA - timeB;
+        }
+        return a.id.localeCompare(b.id);
+      });
+
+      setExecutives(sortedList);
       setLoading(false);
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, 'executives');

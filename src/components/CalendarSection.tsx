@@ -151,7 +151,7 @@ export default function CalendarSection({ currentUser, isOfficer, canManageCalen
             <span>📅 일정 관리</span>
             <span className="text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded font-mono font-medium">Calendar</span>
           </h2>
-          <p className="text-slate-400 text-sm mt-1">로봇 대동제, 아이디어 해커톤 및 교육 일정을 상세히 공유합니다.</p>
+          <p className="text-slate-400 text-sm mt-1">동아리 주요 소식과 교육 일정을 전해드립니다.</p>
         </div>
 
         {canManageCalendar && (
