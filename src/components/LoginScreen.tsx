@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { auth, googleProvider } from '../firebase';
 import { signInWithPopup } from 'firebase/auth';
 import { Cpu, ShieldAlert } from 'lucide-react';
+import KfcLogo from './KfcLogo';
 
 interface LoginScreenProps {
   onLogin: (user: { uid: string; email: string; displayName: string; photoURL: string }) => void;
@@ -52,9 +53,10 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
         className="w-full max-w-md relative z-10"
       >
         <div className="bg-[#121216] border border-slate-800 rounded-2xl p-8 shadow-2xl text-center">
-          {/* Executive Robot Logo Indicator */}
-          <div className="mx-auto w-16 h-16 bg-blue-600/15 border border-blue-500/30 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-blue-900/10">
-            <Cpu className="w-8 h-8 text-blue-550" />
+          {/* Official K.F.C. Logo Indicator */}
+          <div className="mx-auto w-24 h-24 mb-6 relative flex items-center justify-center">
+            <div className="absolute inset-0 bg-blue-600/10 rounded-full blur-xl pointer-events-none" />
+            <KfcLogo size={96} className="text-white relative z-10" />
           </div>
 
           <p className="text-blue-500 font-mono tracking-widest text-xs uppercase mb-1 font-bold">YONGIN YOUTH CENTER</p>

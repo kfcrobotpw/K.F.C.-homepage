@@ -12,6 +12,7 @@ import ExecutiveSection from './components/ExecutiveSection';
 import AdminPanel from './components/AdminPanel';
 import PartRental from './components/PartRental';
 import OfficerChat from './components/OfficerChat';
+import KfcLogo from './components/KfcLogo';
 
 import { 
   Bell, BookOpen, Calendar, Info, ShieldAlert, Cpu, LogOut, ChevronRight, User, GraduationCap, Wrench, MessageSquare
@@ -225,10 +226,8 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex items-center justify-between">
           
           {/* Logo brand */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white shadow-lg shadow-blue-900/30">
-              KFC
-            </div>
+          <div className="flex items-center gap-3 select-none">
+            <KfcLogo size={42} className="text-blue-500 hover:scale-105 transition-all duration-300 pointer-events-auto" />
             <div>
               <h1 className="text-xl font-bold tracking-tight text-white font-display leading-none">
                 K.F.C. <span className="text-blue-500 font-normal text-xs ml-2 uppercase tracking-widest hidden sm:inline">Robot Research Club</span>
