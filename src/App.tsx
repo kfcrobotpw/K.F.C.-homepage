@@ -5,6 +5,7 @@ import { doc, onSnapshot, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db, handleFirestoreError, OperationType } from './firebase';
 
 import LoginScreen from './components/LoginScreen';
+import RegistrationWizard from './components/RegistrationWizard';
 import NoticeBoard from './components/NoticeBoard';
 import ResourceShare from './components/ResourceShare';
 import CalendarSection from './components/CalendarSection';
@@ -35,45 +36,55 @@ export default function App() {
     canManageExecutive: false,
   });
   const [authLoading, setAuthLoading] = useState(true);
+  const [isRegistered, setIsRegistered] = useState<boolean | null>(null);
   const [activeTab, setActiveTab] = useState<'notice' | 'resource' | 'rental' | 'calendar' | 'executive' | 'admin' | 'chat'>('notice');
 
   // Listen to Auth State
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        const loggedUser: AuthUser = {
-          uid: firebaseUser.uid,
-          email: firebaseUser.email || '',
-          displayName: firebaseUser.displayName || 'K.F.C. 단원',
-          photoURL: firebaseUser.photoURL || 'https://images.unsplash.com/photo-1546776310-eef45dd6d63c?auto=format&fit=crop&q=80&w=150',
-        };
+      try {
+        if (firebaseUser) {
+          const loggedUser: AuthUser = {
+            uid: firebaseUser.uid,
+            email: firebaseUser.email || '',
+            displayName: firebaseUser.displayName || 'K.F.C. 단원',
+            photoURL: firebaseUser.photoURL || 'https://images.unsplash.com/photo-1546776310-eef45dd6d63c?auto=format&fit=crop&q=80&w=150',
+          };
 
-        setCurrentUser(loggedUser);
-        
-        // Ensure user registration is safely documented in Firestore users collection
-        try {
-          const userDocRef = doc(db, 'users', firebaseUser.uid);
-          const userSnap = await getDoc(userDocRef);
+          setCurrentUser(loggedUser);
           
-          if (!userSnap.exists()) {
-            // New user registration
-            const defaultOfficer = firebaseUser.email === 'kfcrobotpw@gmail.com';
-            await setDoc(userDocRef, {
-              id: firebaseUser.uid,
-              email: firebaseUser.email || '',
-              displayName: firebaseUser.displayName || 'K.F.C. 단원',
-              photoURL: firebaseUser.photoURL || 'https://images.unsplash.com/photo-1546776310-eef45dd6d63c?auto=format&fit=crop&q=80&w=150',
-              isOfficer: defaultOfficer,
-            });
+          try {
+            const userDocRef = doc(db, 'users', firebaseUser.uid);
+            const userSnap = await getDoc(userDocRef);
+            
+            if (userSnap.exists()) {
+              const dbData = userSnap.data();
+              // Update state with finalized Firestore registered values
+              setCurrentUser({
+                uid: firebaseUser.uid,
+                email: firebaseUser.email || '',
+                displayName: dbData.displayName || loggedUser.displayName,
+                photoURL: dbData.photoURL || loggedUser.photoURL,
+              });
+              setIsRegistered(true);
+            } else {
+              setIsRegistered(false);
+            }
+          } catch (error) {
+            console.error('Check user registration error:', error);
+            // Non-blocking but secure fallbacks
+            setIsRegistered(false);
           }
-        } catch (error) {
-          handleFirestoreError(error, OperationType.WRITE, `users/${firebaseUser.uid}`);
+        } else {
+          setCurrentUser(null);
+          setIsOfficer(false);
+          setIsRegistered(null);
         }
-      } else {
-        setCurrentUser(null);
-        setIsOfficer(false);
+      } catch (err) {
+        console.error('Auth state handler failed:', err);
+      } finally {
+        setAuthLoading(false);
       }
-      setAuthLoading(false);
     });
 
     return () => unsubscribe();
@@ -173,24 +184,7 @@ export default function App() {
 
   const handleLoggedUser = async (user: AuthUser) => {
     setCurrentUser(user);
-    
-    // Direct registration sync for bypassed users
-    try {
-      const userDocRef = doc(db, 'users', user.uid);
-      const userSnap = await getDoc(userDocRef);
-      if (!userSnap.exists()) {
-        const defaultOfficer = user.email === 'kfcrobotpw@gmail.com' || user.uid.includes('admin');
-        await setDoc(userDocRef, {
-          id: user.uid,
-          email: user.email,
-          displayName: user.displayName,
-          photoURL: user.photoURL,
-          isOfficer: defaultOfficer,
-        });
-      }
-    } catch (error) {
-      console.error(error);
-    }
+    // Let the master onAuthStateChanged check registration state instead of doing silent background bypasses
   };
 
   const handleLogout = async () => {
@@ -201,12 +195,13 @@ export default function App() {
     }
     setCurrentUser(null);
     setIsOfficer(false);
+    setIsRegistered(null);
     setActiveTab('notice');
   };
 
-  if (authLoading) {
+  if (authLoading || (currentUser && isRegistered === null)) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center font-mono text-slate-500 text-xs">
+      <div className="min-h-screen bg-[#0A0A0C] flex items-center justify-center font-mono text-slate-500 text-xs">
         동아리 네트워크 초기화 중...
       </div>
     );
@@ -214,6 +209,30 @@ export default function App() {
 
   if (!currentUser) {
     return <LoginScreen onLogin={handleLoggedUser} />;
+  }
+
+  if (isRegistered === false) {
+    return (
+      <RegistrationWizard 
+        firebaseUser={currentUser}
+        onRegistrationComplete={() => {
+          setIsRegistered(true);
+          // Update local displayName in state right away
+          const userDocRef = doc(db, 'users', currentUser.uid);
+          getDoc(userDocRef).then((snap) => {
+            if (snap.exists()) {
+              setCurrentUser({
+                uid: currentUser.uid,
+                email: currentUser.email,
+                displayName: snap.data().displayName || currentUser.displayName,
+                photoURL: snap.data().photoURL || currentUser.photoURL,
+              });
+            }
+          });
+        }}
+        onCancel={handleLogout}
+      />
+    );
   }
 
   return (

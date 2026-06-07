@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  collection, onSnapshot, doc, updateDoc 
+  collection, onSnapshot, doc, updateDoc, deleteDoc
 } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { UserProfile } from '../types';
 import { 
-  ShieldAlert, ShieldCheck, UserMinus, UserPlus, Users, Cpu, Key, Mail, Clock
+  ShieldAlert, ShieldCheck, UserMinus, UserPlus, Users, Cpu, Key, Mail, Clock, Trash2
 } from 'lucide-react';
 
 interface AdminPanelProps {
@@ -78,6 +78,30 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
       });
     } catch (error) {
       handleFirestoreError(error, OperationType.UPDATE, `users/${user.id}`);
+    }
+  };
+
+  const handleDeleteUser = async (user: UserProfile) => {
+    if (user.email === 'kfcrobotpw@gmail.com') {
+      alert('최고 최고관리자는 탈퇴처리 할 수 없습니다.');
+      return;
+    }
+
+    if (user.id === currentUser.uid) {
+      alert('본인 스스로를 강제 탈퇴시킬 수 없습니다.');
+      return;
+    }
+
+    if (!confirm(`정말 [ ${user.displayName} ] 단원을 탈퇴시키겠습니까?\n이 작업은 즉시 이 단원의 가입 기록을 데이터베이스에서 영구 삭제합니다.`)) {
+      return;
+    }
+
+    try {
+      const userDocRef = doc(db, 'users', user.id);
+      await deleteDoc(userDocRef);
+      alert(`${user.displayName} 단원이 정상적으로 탈퇴(삭제) 완료되었습니다.`);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `users/${user.id}`);
     }
   };
 
@@ -237,6 +261,16 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
                                     <span>임원 임명</span>
                                   </>
                                 )}
+                              </button>
+
+                              <button
+                                id={`delete-user-btn-${u.id}`}
+                                onClick={() => handleDeleteUser(u)}
+                                className="inline-flex items-center gap-1 px-3 py-1.5 bg-red-650/15 hover:bg-red-600/35 text-red-400 border border-red-500/20 rounded-lg text-xs font-semibold tracking-tight transition cursor-pointer select-none"
+                                title="단원 탈퇴시키기"
+                              >
+                                <Trash2 className="w-3.5 h-3.5 shrink-0" />
+                                <span>탈퇴</span>
                               </button>
                             </div>
                           )}
