@@ -75,8 +75,8 @@ export default function RegistrationWizard({ firebaseUser, onRegistrationComplet
 
     try {
       const userDocRef = doc(db, 'users', firebaseUser.uid);
-      // Synchronously write user profile to Firestore
-      await setDoc(userDocRef, userData);
+      // Synchronously write user profile to Firestore using merge: true to preserve roles/permissions
+      await setDoc(userDocRef, userData, { merge: true });
       
       // Complete!
       onRegistrationComplete();

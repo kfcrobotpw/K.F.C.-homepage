@@ -167,9 +167,11 @@ service cloud.firestore {
       allow list: if isSignedIn();
       allow create: if isSignedIn() && request.auth.uid == userId && isValidUser(incoming()) && (
         incoming().isOfficer == false || 
-        request.auth.token.email == "kfcrobotpw@gmail.com"
+        request.auth.token.get('email', '') == "kfcrobotpw@gmail.com"
       );
       allow update: if isSignedIn() && (
+        // Root admin can modify anything on their own profile
+        (request.auth.uid == userId && request.auth.token.get('email', '') == "kfcrobotpw@gmail.com" && isValidUser(incoming())) ||
         // Officers can modify anyone's properties
         isOfficer() ||
         // Profile owner can modify own details EXCEPT isOfficer and permission fields
