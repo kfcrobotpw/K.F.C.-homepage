@@ -165,18 +165,18 @@ service cloud.firestore {
     match /users/{userId} {
       allow get: if isSignedIn();
       allow list: if isSignedIn();
-      allow create: if isSignedIn() && request.auth.uid == userId && isValidUser(incoming()) && (
-        incoming().isOfficer == false || 
-        request.auth.token.get('email', '') == "kfcrobotpw@gmail.com"
+      allow create: if isSignedIn() && request.auth.uid == userId && (
+        incoming().get('isOfficer', false) == false || 
+        request.auth.token.email == "kfcrobotpw@gmail.com"
       );
       allow update: if isSignedIn() && (
         // Root admin can modify anything on their own profile
-        (request.auth.uid == userId && request.auth.token.get('email', '') == "kfcrobotpw@gmail.com" && isValidUser(incoming())) ||
+        request.auth.token.email == "kfcrobotpw@gmail.com" ||
         // Officers can modify anyone's properties
         isOfficer() ||
         // Profile owner can modify own details EXCEPT isOfficer and permission fields
-        (request.auth.uid == userId && isValidUser(incoming()) && 
-         incoming().isOfficer == existing().isOfficer &&
+        (request.auth.uid == userId && 
+         incoming().get('isOfficer', false) == existing().get('isOfficer', false) &&
          incoming().get('canManageNotice', false) == existing().get('canManageNotice', false) &&
          incoming().get('canManageResource', false) == existing().get('canManageResource', false) &&
          incoming().get('canManageCalendar', false) == existing().get('canManageCalendar', false) &&
