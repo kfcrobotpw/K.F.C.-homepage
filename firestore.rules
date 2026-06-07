@@ -13,10 +13,7 @@ service cloud.firestore {
     }
 
     function isEmailVerified() {
-      return isSignedIn() && (
-        request.auth.token.email == "kfcrobotpw@gmail.com" ||
-        request.auth.token.get('email_verified', false) == true
-      );
+      return isSignedIn();
     }
 
     function isValidId(id) {
@@ -34,35 +31,35 @@ service cloud.firestore {
     // Root bootstrapped admin & ABAC role checking
     function isOfficer() {
       return isSignedIn() && (
-        (request.auth.token.email == "kfcrobotpw@gmail.com" && isEmailVerified()) ||
+        request.auth.token.email == "kfcrobotpw@gmail.com" ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isOfficer == true)
       );
     }
 
     function canManageNotice(uid) {
-      return (request.auth.token.email == "kfcrobotpw@gmail.com" && isEmailVerified()) || (
+      return (request.auth.token.email == "kfcrobotpw@gmail.com") || (
         exists(/databases/$(database)/documents/users/$(uid)) &&
         get(/databases/$(database)/documents/users/$(uid)).data.get('canManageNotice', false) == true
       );
     }
 
     function canManageResource(uid) {
-      return (request.auth.token.email == "kfcrobotpw@gmail.com" && isEmailVerified()) || (
+      return (request.auth.token.email == "kfcrobotpw@gmail.com") || (
         exists(/databases/$(database)/documents/users/$(uid)) &&
         get(/databases/$(database)/documents/users/$(uid)).data.get('canManageResource', false) == true
       );
     }
 
     function canManageCalendar(uid) {
-      return (request.auth.token.email == "kfcrobotpw@gmail.com" && isEmailVerified()) || (
+      return (request.auth.token.email == "kfcrobotpw@gmail.com") || (
         exists(/databases/$(database)/documents/users/$(uid)) &&
         get(/databases/$(database)/documents/users/$(uid)).data.get('canManageCalendar', false) == true
       );
     }
 
     function canManageExecutive(uid) {
-      return (request.auth.token.email == "kfcrobotpw@gmail.com" && isEmailVerified()) || (
+      return (request.auth.token.email == "kfcrobotpw@gmail.com") || (
         exists(/databases/$(database)/documents/users/$(uid)) &&
         get(/databases/$(database)/documents/users/$(uid)).data.get('canManageExecutive', false) == true
       );
@@ -170,7 +167,7 @@ service cloud.firestore {
       allow list: if isSignedIn();
       allow create: if isSignedIn() && request.auth.uid == userId && isValidUser(incoming()) && (
         incoming().isOfficer == false || 
-        (request.auth.token.email == "kfcrobotpw@gmail.com" && isEmailVerified())
+        request.auth.token.email == "kfcrobotpw@gmail.com"
       );
       allow update: if isSignedIn() && (
         // Officers can modify anyone's properties

@@ -20,7 +20,9 @@ interface RegistrationWizardProps {
 export default function RegistrationWizard({ firebaseUser, onRegistrationComplete, onCancel }: RegistrationWizardProps) {
   const [step, setStep] = useState(1);
   const [realName, setRealName] = useState(firebaseUser.displayName.replace(/\s*\(.*?\)\s*/g, '').replace(/\[.*?\]\s*/g, '') || '');
-  const [techInterest, setTechInterest] = useState('로봇 제작 및 코딩');
+  const [techInterest, setTechInterest] = useState('로봇 코딩 및 알고리즘');
+  const [customTechInterest, setCustomTechInterest] = useState('');
+  const [isCustomTech, setIsCustomTech] = useState(false);
   const [privacyAgreed, setPrivacyAgreed] = useState(false);
   const [oathAgreed, setOathAgreed] = useState(false);
   
@@ -40,6 +42,10 @@ export default function RegistrationWizard({ firebaseUser, onRegistrationComplet
       alert('정확한 실제 회원 성명을 입력해 주세요 (실명 기반 등록).');
       return;
     }
+    if (step === 2 && isCustomTech && !customTechInterest.trim()) {
+      alert('자신이 직접 입력할 관심/연구 분야를 작성해 주세요.');
+      return;
+    }
     if (step < 3) {
       setStep(step + 1);
     }
@@ -55,7 +61,8 @@ export default function RegistrationWizard({ firebaseUser, onRegistrationComplet
     setErrorStatus(null);
 
     // Format display name as Name (Tech) to make it globally distinguishable
-    const formattedDisplayName = `${realName.trim()} (${techInterest})`;
+    const finalInterest = isCustomTech ? customTechInterest.trim() : techInterest;
+    const formattedDisplayName = `${realName.trim()} (${finalInterest})`;
     const defaultOfficer = firebaseUser.email === 'kfcrobotpw@gmail.com';
 
     const userData = {
@@ -204,8 +211,15 @@ export default function RegistrationWizard({ firebaseUser, onRegistrationComplet
                   <div>
                     <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase font-mono tracking-wider">주요 관심/연구 분야</label>
                     <select
-                      value={techInterest}
-                      onChange={(e) => setTechInterest(e.target.value)}
+                      value={isCustomTech ? 'custom' : techInterest}
+                      onChange={(e) => {
+                        if (e.target.value === 'custom') {
+                          setIsCustomTech(true);
+                        } else {
+                          setIsCustomTech(false);
+                          setTechInterest(e.target.value);
+                        }
+                      }}
                       className="w-full bg-[#0A0A0C] border border-slate-850 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-blue-500 transition font-medium cursor-pointer"
                     >
                       <option value="로봇 코딩 및 알고리즘">로봇 코딩 및 알고리즘 개발</option>
@@ -214,7 +228,28 @@ export default function RegistrationWizard({ firebaseUser, onRegistrationComplet
                       <option value="아두이노 임베디드 코딩">아두이노 임베디드 임프루빙</option>
                       <option value="AI 자율주행 및 드론">AI 자율주행 및 드론 연구</option>
                       <option value="지도 및 관리">동아리 총괄 및 교육 지도</option>
+                      <option value="custom">✍️ 직접 입력하기...</option>
                     </select>
+
+                    <AnimatePresence>
+                      {isCustomTech && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                          animate={{ opacity: 1, height: 'auto', marginTop: 10 }}
+                          exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
+                        >
+                          <input 
+                            type="text"
+                            placeholder="자신의 관심/연구 분야를 자유롭게 20자 이내로 입력하세요"
+                            value={customTechInterest}
+                            onChange={(e) => setCustomTechInterest(e.target.value.slice(0, 20))}
+                            className="w-full bg-[#0A0A0C] border border-slate-850 rounded-xl p-3 text-xs text-blue-400 focus:outline-[#3B82F6] hover:border-slate-700 focus:border-blue-500 transition font-semibold"
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </div>
               </motion.div>
@@ -260,7 +295,7 @@ export default function RegistrationWizard({ firebaseUser, onRegistrationComplet
                     <div>
                       <span className="text-xs text-slate-500 block">매핑될 고유 성명</span>
                       <strong className="text-sm text-white font-bold block">
-                        {realName} ({techInterest})
+                        {realName} ({isCustomTech ? customTechInterest : techInterest})
                       </strong>
                     </div>
                   </div>
