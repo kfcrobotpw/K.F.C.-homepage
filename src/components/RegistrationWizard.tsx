@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { doc, setDoc } from 'firebase/firestore';
-import { db, handleFirestoreError, OperationType } from '../firebase';
+import { db } from '../firebase';
 import { 
-  ShieldCheck, User, Users, GraduationCap, ArrowRight, ArrowLeft, CheckCircle2, AlertCircle, Sparkles, Send
+  ShieldCheck, User, Users, GraduationCap, ArrowRight, ArrowLeft, AlertCircle, Sparkles, Send
 } from 'lucide-react';
 
 interface RegistrationWizardProps {
@@ -20,7 +20,6 @@ interface RegistrationWizardProps {
 export default function RegistrationWizard({ firebaseUser, onRegistrationComplete, onCancel }: RegistrationWizardProps) {
   const [step, setStep] = useState(1);
   const [realName, setRealName] = useState(firebaseUser.displayName.replace(/\s*\(.*?\)\s*/g, '').replace(/\[.*?\]\s*/g, '') || '');
-  const [gradeCategory, setGradeCategory] = useState<'중등부' | '고등부' | '대학부' | '일반부'>('고등부');
   const [techInterest, setTechInterest] = useState('로봇 제작 및 코딩');
   const [privacyAgreed, setPrivacyAgreed] = useState(false);
   const [oathAgreed, setOathAgreed] = useState(false);
@@ -34,7 +33,7 @@ export default function RegistrationWizard({ firebaseUser, onRegistrationComplet
 
   const nextStep = () => {
     if (step === 1 && !privacyAgreed) {
-      alert('동아리 개인정보 취급 및 가입 약관에 사전 동동의해 주세요.');
+      alert('동아리 개인정보 취급 및 가입 약관에 사전 동의해 주세요.');
       return;
     }
     if (step === 2 && !realName.trim()) {
@@ -55,8 +54,8 @@ export default function RegistrationWizard({ firebaseUser, onRegistrationComplet
     setSubmitting(true);
     setErrorStatus(null);
 
-    // Format display name as [Grade] Name (Tech) to make it globally distinguishable
-    const formattedDisplayName = `[${gradeCategory}] ${realName.trim()} (${techInterest})`;
+    // Format display name as Name (Tech) to make it globally distinguishable
+    const formattedDisplayName = `${realName.trim()} (${techInterest})`;
     const defaultOfficer = firebaseUser.email === 'kfcrobotpw@gmail.com';
 
     const userData = {
@@ -152,7 +151,7 @@ export default function RegistrationWizard({ firebaseUser, onRegistrationComplet
                 <div className="bg-slate-900/40 border border-slate-850 rounded-xl p-4 text-xs space-y-3.5 text-slate-300">
                   <span className="font-bold text-slate-200 block text-[11px] uppercase tracking-wider font-mono">📌 회원 정보 수집 항목 및 사용 목적</span>
                   <div className="space-y-2 font-light leading-relaxed">
-                    <p>• <b>수집 항목</b>: 프로필 사진, 구글 인증 이메일 주소, 실명 및 직급 구분, 관심 로봇 공학 분야</p>
+                    <p>• <b>수집 항목</b>: 프로필 사진, 구글 인증 이메일 주소, 실명 및 관심 로봇 공학 분야</p>
                     <p>• <b>보존 목적</b>: 동아리 공지 피드백 투표, 임원진 보안 등급 설정, 부품 대여 이력 연계 추적, 단원 간 원활한 자료 공유 활성화</p>
                     <p>• <b>보존 기간</b>: K.F.C. 해체 시 또는 관리자에 의한 강제 탈퇴 처리 시 데이터 영구 삭제</p>
                   </div>
@@ -203,26 +202,6 @@ export default function RegistrationWizard({ firebaseUser, onRegistrationComplet
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase font-mono tracking-wider">단원 소속 구분</label>
-                    <div className="grid grid-cols-4 gap-2">
-                      {(['중등부', '고등부', '대학부', '일반부'] as const).map((cat) => (
-                        <button
-                          key={cat}
-                          type="button"
-                          onClick={() => setGradeCategory(cat)}
-                          className={`py-2 px-1 text-xs font-semibold rounded-lg border transition cursor-pointer select-none text-center ${
-                            gradeCategory === cat
-                              ? 'bg-blue-600/15 border-blue-500 text-blue-400 font-bold'
-                              : 'bg-[#0A0A0C] border-slate-850 text-slate-500 hover:text-slate-350 hover:border-slate-800'
-                          }`}
-                        >
-                          {cat}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
                     <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase font-mono tracking-wider">주요 관심/연구 분야</label>
                     <select
                       value={techInterest}
@@ -259,12 +238,12 @@ export default function RegistrationWizard({ firebaseUser, onRegistrationComplet
                   </p>
                 </div>
 
-                <div className="bg-blue-950/20 border border-blue-500/10 rounded-xl p-4 text-xs space-y-2.5">
+                <div className="bg-blue-950/30 border border-blue-500/20 rounded-xl p-4 text-xs space-y-2.5">
                   <span className="font-bold text-blue-400 flex items-center gap-1">
-                    <GraduationCap className="w-4 h-4" />
-                    <span>📜 K.F.C. 단원 명예 연맹 수칙</span>
+                    <GraduationCap className="w-4.5 h-4.5 text-blue-400" />
+                    <span className="text-blue-300 font-semibold font-display">📜 K.F.C. 단원 명예 연맹 수칙</span>
                   </span>
-                  <div className="space-y-1 my-2 text-slate-350 leading-relaxed font-light">
+                  <div className="space-y-2.5 my-2 text-slate-200 leading-relaxed font-semibold">
                     <p>1. 용인시청소년수련관의 규칙을 우수하게 따르며 장비를 아낍니다.</p>
                     <p>2. 동아리 공동 공간의 로봇 부품은 자산 대여 수칙에 서명 후 대여합니다.</p>
                     <p>3. 상호 존중과 배려 깊은 팀웍을 통해 로봇 창의 프로젝트에 헌신합니다.</p>
@@ -281,7 +260,7 @@ export default function RegistrationWizard({ firebaseUser, onRegistrationComplet
                     <div>
                       <span className="text-xs text-slate-500 block">매핑될 고유 성명</span>
                       <strong className="text-sm text-white font-bold block">
-                        [{gradeCategory}] {realName} ({techInterest})
+                        {realName} ({techInterest})
                       </strong>
                     </div>
                   </div>
@@ -293,7 +272,7 @@ export default function RegistrationWizard({ firebaseUser, onRegistrationComplet
                     type="checkbox"
                     checked={oathAgreed}
                     onChange={(e) => setOathAgreed(e.target.checked)}
-                    className="mt-0.5 rounded border-slate-705 bg-slate-950 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    className="mt-0.5 rounded border-slate-700 bg-slate-950 text-blue-600 focus:ring-blue-500 cursor-pointer"
                   />
                   <span className="text-xs text-slate-300 leading-tight">
                     <b>[최종 확약]</b> 본인은 위 단원 서약에 서명하며, 데이터베이스에 본 회원 메타데이터 정보가 확실하게 추가되어 모니터링되는 것을 준수하겠습니다.

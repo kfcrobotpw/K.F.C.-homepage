@@ -266,7 +266,7 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
                               <button
                                 id={`delete-user-btn-${u.id}`}
                                 onClick={() => handleDeleteUser(u)}
-                                className="inline-flex items-center gap-1 px-3 py-1.5 bg-red-650/15 hover:bg-red-600/35 text-red-400 border border-red-500/20 rounded-lg text-xs font-semibold tracking-tight transition cursor-pointer select-none"
+                                className="inline-flex items-center gap-1 px-3 py-1.5 bg-red-950/20 hover:bg-red-900/30 text-red-400 border border-red-500/20 rounded-lg text-xs font-semibold tracking-tight transition cursor-pointer select-none"
                                 title="단원 탈퇴시키기"
                               >
                                 <Trash2 className="w-3.5 h-3.5 shrink-0" />
@@ -305,7 +305,7 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
                                 <label className={`flex items-start gap-2.5 p-3 rounded-lg border transition select-none cursor-pointer ${
                                   u.canManageNotice 
                                     ? 'bg-blue-500/5 border-blue-500/30 text-white font-medium border-blue-500/40 shadow shadow-blue-500/10' 
-                                    : 'bg-[#0A0A0C] border-slate-800 text-slate-400 hover:border-slate-705'
+                                    : 'bg-[#0A0A0C] border-slate-800 text-slate-400 hover:border-slate-700'
                                 }`}>
                                   <input 
                                     type="checkbox" 
@@ -323,7 +323,7 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
                                 <label className={`flex items-start gap-2.5 p-3 rounded-lg border transition select-none cursor-pointer ${
                                   u.canManageResource 
                                     ? 'bg-blue-500/5 border-blue-500/30 text-white font-medium border-blue-500/40 shadow shadow-blue-500/10' 
-                                    : 'bg-[#0A0A0C] border-slate-800 text-slate-400 hover:border-slate-705'
+                                    : 'bg-[#0A0A0C] border-slate-800 text-slate-400 hover:border-slate-700'
                                 }`}>
                                   <input 
                                     type="checkbox" 
@@ -341,7 +341,7 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
                                 <label className={`flex items-start gap-2.5 p-3 rounded-lg border transition select-none cursor-pointer ${
                                   u.canManageCalendar 
                                     ? 'bg-blue-500/5 border-blue-500/30 text-white font-medium border-blue-500/40 shadow shadow-blue-500/10' 
-                                    : 'bg-[#0A0A0C] border-slate-800 text-slate-400 hover:border-slate-705'
+                                    : 'bg-[#0A0A0C] border-slate-800 text-slate-400 hover:border-slate-700'
                                 }`}>
                                   <input 
                                     type="checkbox" 
@@ -359,7 +359,7 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
                                 <label className={`flex items-start gap-2.5 p-3 rounded-lg border transition select-none cursor-pointer ${
                                   u.canManageExecutive 
                                     ? 'bg-blue-500/5 border-blue-500/30 text-white font-medium border-blue-500/40 shadow shadow-blue-500/10' 
-                                    : 'bg-[#0A0A0C] border-slate-800 text-slate-400 hover:border-slate-705'
+                                    : 'bg-[#0A0A0C] border-slate-800 text-slate-400 hover:border-slate-700'
                                 }`}>
                                   <input 
                                     type="checkbox" 
